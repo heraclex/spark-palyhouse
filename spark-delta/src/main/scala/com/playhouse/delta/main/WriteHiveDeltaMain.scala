@@ -39,7 +39,7 @@ object WriteHiveDeltaMain {
            |""".stripMargin)
 
       df.show(10,true)
-      df.write.format("delta").partitionBy("day").mode("append").save(s3TableLocation)
+      df.write.format("delta").partitionBy("day").mode("overwrite").save(s3TableLocation)
 
       // support other processing engine
       spark.sql(s"GENERATE symlink_format_manifest FOR TABLE delta.`$s3TableLocation`")

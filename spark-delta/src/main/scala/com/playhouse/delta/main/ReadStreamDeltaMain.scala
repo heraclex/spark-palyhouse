@@ -1,5 +1,6 @@
 package com.playhouse.delta.main
 
+import com.playhouse.delta.common.Constants.sparkCheckpointDirectory
 import com.playhouse.delta.infra.spark.SparkSessionBuilder
 import com.playhouse.delta.sensorDataLogger
 import org.apache.spark.sql.SparkSession
@@ -17,6 +18,7 @@ object ReadStreamDeltaMain {
       val df = spark.sql("select * from delta_hotel where day > 20201010")
       val query = df.writeStream
         .outputMode("append")
+        .option("checkpointLocation", sparkCheckpointDirectory)
         .format("console")
         .start()
 
