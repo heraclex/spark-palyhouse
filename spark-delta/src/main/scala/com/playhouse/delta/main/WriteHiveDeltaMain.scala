@@ -17,9 +17,9 @@ object WriteHiveDeltaMain {
         s"""travelCode int, userCode int, name string, place string, stayingDays int,
            |price float, total float, `date` date, day int""".stripMargin
 
-      val database = "delta"
+      val database = "travel"
       val tableName = "hotel"
-      val s3DatabaseLocation = s"s3a://hive/$database.db"
+      val s3DatabaseLocation = s"s3a://delta/$database.db"
       val s3TableLocation = s"$s3DatabaseLocation/$tableName/"
 
       // https://github.com/delta-io/connectors/issues/71
@@ -39,7 +39,7 @@ object WriteHiveDeltaMain {
            |""".stripMargin)
 
       df.show(10,true)
-      df.write.format("delta").partitionBy("day").mode("overwrite").save(s3TableLocation)
+      df.write.format("delta").partitionBy("day").mode("append").save(s3TableLocation)
 
       // support other processing engine
       spark.sql(s"GENERATE symlink_format_manifest FOR TABLE delta.`$s3TableLocation`")
