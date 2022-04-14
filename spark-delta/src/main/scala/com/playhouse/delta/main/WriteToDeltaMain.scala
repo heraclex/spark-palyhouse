@@ -22,7 +22,7 @@ object WriteToDeltaMain {
 
       // https://github.com/delta-io/connectors/issues/71
       spark.read.option("delimiter", ",")
-        .option("header", "true").csv("./src/main/resources/hotels.csv")
+        .option("header", "true").csv("./src/main/resources/hotels_part3.csv")
         .createTempView("tmp")
 
       val df = spark.sql(
@@ -40,14 +40,12 @@ object WriteToDeltaMain {
 
       df.show(10,true)
       df.write.format("delta").partitionBy("day")
-        .mode("overwrite").save(s"$s3TableLocation")
+        .mode("append").save(s"$s3TableLocation")
 
 
       // https://docs.delta.io/latest/presto-integration.html
       spark.sql(s"GENERATE symlink_format_manifest FOR TABLE delta.`$s3TableLocation`")
-      spark.sql(
-        s"""CREATE DATABASE IF NOT EXISTS $databaseName
-           |LOCATION 's3a://${TargetSystem.DELTA.toString}/$databaseName.db'""".stripMargin)
+      spark.sql(s"CREATE DATABASE IF NOT EXISTS $databaseName LOCATION 's3a://${TargetSystem.DELTA.toString}/$databaseName.db'".stripMargin)
       spark.sql(
         s"""CREATE EXTERNAL TABLE IF NOT EXISTS $databaseName.$tableName($tableCols)
             USING DELTA
@@ -55,7 +53,7 @@ object WriteToDeltaMain {
             LOCATION '$s3TableLocation'""".stripMargin)
       spark.sql(s"ALTER TABLE delta.`$s3TableLocation` SET TBLPROPERTIES(delta.compatibility.symlinkFormatManifest.enabled=true)")
 
-      //      spark.sql(s"GENERATE symlink_format_manifest FOR TABLE delta.`s3a://${TargetSystem.DELTA.toString}/$databaseName.db/$tableName`")
+//      spark.sql(s"GENERATE symlink_format_manifest FOR TABLE delta.`s3a://${TargetSystem.DELTA.toString}/$databaseName.db/$tableName`")
 //      spark.sql(
 //        s"""
 //           |CREATE EXTERNAL TABLE $databaseName.$tableName ($tableCols)

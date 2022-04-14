@@ -1,6 +1,6 @@
 package com.playhouse.delta.main
 
-import com.playhouse.delta.common.Constants.{databaseName, sparkCheckpointDirectory, tableName}
+import com.playhouse.delta.common.Constants.{databaseName, sparkCheckpointDirectory}
 import com.playhouse.delta.common.TargetSystem
 import com.playhouse.delta.infra.spark.SparkSessionBuilder
 import com.playhouse.delta.sensorDataLogger
@@ -8,20 +8,17 @@ import org.apache.spark.sql.SparkSession
 
 import scala.util.{Failure, Success, Try}
 
-object ReadStreamDeltaMain {
+object ReadStreamDeltaMain2 {
   def main(args: Array[String]): Unit = {
     Try{
       implicit val spark: SparkSession = SparkSessionBuilder().build(appName = "spark-delta")
       sensorDataLogger.info("Got spark...")
 
-      spark.readStream.format("delta").table("travel.hotel").createTempView("delta_hotel")
-      val df = spark.sql("select * from delta_hotel where place='Natal (RN)'")
-//      val df = spark.sql(
-//        s"""select sum(total) as sum_total, place, day
-//           |from travel.hotel group by place, day;""".stripMargin)
+      spark.readStream.format("delta").table("travel.hotel_natal_rn").createTempView("delta_hotel_natal")
+      val df = spark.sql("select name as hotel_name, date, day, sum(total) as total from delta_hotel_natal group by name, date, day")
 
       val s3databaseLocation = s"s3a://${TargetSystem.DELTA.toString}/$databaseName.db"
-      val s3TableLocation = s"$s3databaseLocation/hotel_natal_rn"
+      val s3TableLocation = s"$s3databaseLocation/hotel_natal_rn_agg"
       val tableCols =
         s"""travelCode int, userCode int, name string, place string, stayingDays int,
            |price float, total float, `date` date, day int""".stripMargin
@@ -38,10 +35,10 @@ object ReadStreamDeltaMain {
 //      spark.sql(s"ALTER TABLE delta.`$s3TableLocation` SET TBLPROPERTIES(delta.compatibility.symlinkFormatManifest.enabled=true)")
 
       val query = df.writeStream.format("delta")
-        .outputMode("append")
+        .outputMode("complete")
         .partitionBy("day")
-        .option("checkpointLocation", sparkCheckpointDirectory)
-        .toTable(s"$databaseName.hotel_natal_rn")
+        .option("checkpointLocation", s"$sparkCheckpointDirectory/table2")
+        .toTable(s"$databaseName.hotel_natal_rn_agg")
         //.start()
 
       query.awaitTermination()
