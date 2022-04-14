@@ -39,15 +39,12 @@ object WriteToDeltaMain {
            |""".stripMargin)
 
       df.show(10,true)
-      df.write.format("delta")
-        .partitionBy("day")
-        .mode("overwrite")
-        .save(s"$s3TableLocation")
+      df.write.format("delta").partitionBy("day")
+        .mode("overwrite").save(s"$s3TableLocation")
 
 
+      // https://docs.delta.io/latest/presto-integration.html
       spark.sql(s"GENERATE symlink_format_manifest FOR TABLE delta.`$s3TableLocation`")
-      //spark.sql(s"CREATE DATABASE IF NOT EXISTS $databaseName LOCATION 's3a://${TargetSystem.DELTA.toString}/$databaseName.db/'")
-      //spark.sql(s"DROP TABLE IF EXISTS $databaseName.$tableName")
       spark.sql(
         s"""CREATE TABLE IF NOT EXISTS $databaseName.$tableName($tableCols)
             USING DELTA
@@ -57,8 +54,6 @@ object WriteToDeltaMain {
             OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
             LOCATION '$s3TableLocation'""".stripMargin)
       spark.sql("ALTER TABLE delta.`$s3TableLocation` SET TBLPROPERTIES(delta.compatibility.symlinkFormatManifest.enabled=true)")
-
-
 
       //      spark.sql(s"GENERATE symlink_format_manifest FOR TABLE delta.`s3a://${TargetSystem.DELTA.toString}/$databaseName.db/$tableName`")
 //      spark.sql(
