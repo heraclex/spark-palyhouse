@@ -1,0 +1,4 @@
+[0m[[0m[0mdebug[0m] [0m[0mCopy resource mappings: [0m
+[0m[[0m[0mdebug[0m] [0m[0m	(/Users/toanle/workspace/personal/spark-palyhouse/spark-delta/src/main/resources/users.csv,/Users/toanle/workspace/personal/spark-palyhouse/spark-delta/target/scala-2.13/classes/users.csv)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	(/Users/toanle/workspace/personal/spark-palyhouse/spark-delta/src/main/resources/hotels.csv,/Users/toanle/workspace/personal/spark-palyhouse/spark-delta/target/scala-2.13/classes/hotels.csv)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	(/Users/toanle/workspace/personal/spark-palyhouse/spark-delta/src/main/resources/flights.csv,/Users/toanle/workspace/personal/spark-palyhouse/spark-delta/target/scala-2.13/classes/flights.csv)[0m

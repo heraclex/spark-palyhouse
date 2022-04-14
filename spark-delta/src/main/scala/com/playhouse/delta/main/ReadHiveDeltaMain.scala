@@ -12,7 +12,7 @@ object ReadHiveDeltaMain {
       implicit val spark: SparkSession = SparkSessionBuilder().build(appName = "spark-delta")
       sensorDataLogger.info("Got spark...")
 
-      val hotel = spark.readStream.sql("select * from delta.hotel where day>20201010")
+      val hotel = spark.sql("select * from delta.hotel where day>20201010")
       hotel.show(10, true)
 
     } match {

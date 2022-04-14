@@ -8,4 +8,15 @@ object Constants {
   val s3aEndpoint = "http://127.0.0.1:9000"
   val s3aAccessKey = "spark"
   val s3aSecretKey = "spark12345"
+
+  val databaseName = "travel"
+  val tableName = "hotel"
+}
+
+object TargetSystem extends Enumeration {
+  type TargetSystem = Value
+
+  // https://docs.amazonaws.cn/en_us/redshift/latest/mgmt/configure-jdbc-connection.html
+  val DELTA = Value("delta")
+  val HIVE = Value("hive")
 }

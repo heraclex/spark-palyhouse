@@ -1,5 +1,7 @@
 package com.playhouse.delta.main
 
+import com.playhouse.delta.common.Constants._
+import com.playhouse.delta.common.TargetSystem
 import com.playhouse.delta.infra.spark.SparkSessionBuilder
 import com.playhouse.delta.sensorDataLogger
 import org.apache.spark.sql.SparkSession
@@ -16,9 +18,7 @@ object WriteToHiveMain {
         s"""travelCode int, userCode int, name string, place string, stayingDays int,
            |price float, total float, `date` date, day int""".stripMargin
 
-      val database = "travel"
-      val tableName = "hotel"
-      val s3DatabaseLocation = s"s3a://hive/$database.db"
+      val s3DatabaseLocation = s"s3a://${TargetSystem.HIVE.toString}/$databaseName.db"
       val s3TableLocation = s"$s3DatabaseLocation/$tableName/"
 
       // https://github.com/delta-io/connectors/issues/71
@@ -38,8 +38,11 @@ object WriteToHiveMain {
            |""".stripMargin)
 
       df.show(10,true)
-      spark.sql(s"CREATE DATABASE IF NOT EXISTS $database LOCATION '$s3DatabaseLocation'")
-      df.write.partitionBy("day").mode("overwrite").saveAsTable(s"$database.$tableName")
+      spark.sql(
+        s"""CREATE DATABASE IF NOT EXISTS $databaseName
+           |LOCATION 's3a://${TargetSystem.HIVE.toString}/$databaseName.db'""".stripMargin)
+      df.write.partitionBy("day").mode("overwrite")
+        .saveAsTable(s"$databaseName.$tableName")
 
     } match {
       case Success(_) => sensorDataLogger.info("Calling from finish job...SUCCESSSSSSS")

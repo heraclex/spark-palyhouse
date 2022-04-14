@@ -1,5 +1,7 @@
 package com.playhouse.delta.main
 
+import com.playhouse.delta.common.Constants._
+import com.playhouse.delta.common.TargetSystem
 import com.playhouse.delta.infra.spark.SparkSessionBuilder
 import com.playhouse.delta.sensorDataLogger
 import org.apache.spark.sql.SparkSession
@@ -12,9 +14,11 @@ object ReadDeltaMain {
       implicit val spark: SparkSession = SparkSessionBuilder().build(appName = "spark-delta")
       sensorDataLogger.info("Got spark...")
 
-//      val hotel = spark.table("delta.hotel")
 
-      val hotel = spark.read.format("delta").load(s"s3a://hive/delta.db/hotel/")
+      val location = s"s3a://${TargetSystem.DELTA.toString}/$databaseName.db/$tableName"
+      val history = spark.sql(s"DESCRIBE HISTORY delta.`$location`")
+      history.show(10, true)
+      val hotel = spark.sql(s"select * from delta.`$location` where day > 20211010")
 
 
       hotel.show(10, true)
