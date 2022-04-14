@@ -77,7 +77,7 @@ private[spark] object SparkSessionDecorators {
         .config("hive.exec.dynamic.partition", "true")
         .config("hive.exec.dynamic.partition.mode", "nonstrict")
         .config("spark.sql.sources.partitionOverwriteMode", "dynamic")
-        .config("hive.metastore.uris", hiveThriftServer)
+        .config("hive.metastore.uris", hiveMetastore)
         .config("spark.sql.warehouse.dir", hiveWareHouse)
         .config("spark.sql.files.ignoreMissingFiles", "true")
         .config("spark.sql.session.timeZone", "UTC")
