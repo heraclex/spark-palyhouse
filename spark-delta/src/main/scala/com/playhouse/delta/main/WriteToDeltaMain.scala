@@ -46,14 +46,14 @@ object WriteToDeltaMain {
       // https://docs.delta.io/latest/presto-integration.html
       spark.sql(s"GENERATE symlink_format_manifest FOR TABLE delta.`$s3TableLocation`")
       spark.sql(
-        s"""CREATE TABLE IF NOT EXISTS $databaseName.$tableName($tableCols)
+        s"""CREATE DATABASE IF NOT EXISTS $databaseName
+           |LOCATION 's3a://${TargetSystem.DELTA.toString}/$databaseName.db'""".stripMargin)
+      spark.sql(
+        s"""CREATE EXTERNAL TABLE IF NOT EXISTS $databaseName.$tableName($tableCols)
             USING DELTA
             PARTITIONED BY(day)
-            ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
-            STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.SymlinkTextInputFormat'
-            OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
             LOCATION '$s3TableLocation'""".stripMargin)
-      spark.sql("ALTER TABLE delta.`$s3TableLocation` SET TBLPROPERTIES(delta.compatibility.symlinkFormatManifest.enabled=true)")
+      spark.sql(s"ALTER TABLE delta.`$s3TableLocation` SET TBLPROPERTIES(delta.compatibility.symlinkFormatManifest.enabled=true)")
 
       //      spark.sql(s"GENERATE symlink_format_manifest FOR TABLE delta.`s3a://${TargetSystem.DELTA.toString}/$databaseName.db/$tableName`")
 //      spark.sql(

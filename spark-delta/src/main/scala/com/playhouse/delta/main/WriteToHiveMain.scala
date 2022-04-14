@@ -44,6 +44,22 @@ object WriteToHiveMain {
       df.write.partitionBy("day").mode("overwrite")
         .saveAsTable(s"$databaseName.$tableName")
 
+      // create hive table
+      //      spark.sql(
+      //        s"""CREATE EXTERNAL TABLE IF NOT EXISTS $database.$tableName($tableCols)
+      //            PARTITIONED BY (day)
+      //            ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+      //            STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.SymlinkTextInputFormat'
+      //            OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+      //            LOCATION '$s3TableLocation/_symlink_format_manifest/'""".stripMargin)
+      //
+      //      spark.sql(
+      //        s"""ALTER TABLE $database.$tableName
+      //           |SET TBLPROPERTIES(delta.compatibility.symlinkFormatManifest.enabled=true)""".stripMargin)
+
+      // MSCK is used to recover the partitions that exist on the file system, but not registered in the metadata
+      //      spark.sql(s"MSCK REPAIR TABLE $database.$tableName")
+
     } match {
       case Success(_) => sensorDataLogger.info("Calling from finish job...SUCCESSSSSSS")
       case Failure(e) =>
