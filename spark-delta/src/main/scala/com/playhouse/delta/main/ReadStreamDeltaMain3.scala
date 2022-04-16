@@ -17,17 +17,14 @@ object ReadStreamDeltaMain3 {
       implicit val spark: SparkSession = SparkSessionBuilder().build(appName = "spark-read-delta3")
       sparkAppLogger.info("Got spark...")
 
-      spark.readStream.format("delta").table(s"$databaseName.hotel2").createTempView("tmp")
-      val df = spark.sql("select name as hotel_name, date, total from tmp")
+      spark.readStream.format("delta").table(s"$databaseName.hotel1").createTempView("tmp")
+      //val df = spark.sql("select hotel_name, date, total from tmp")
+      val df = spark.sql(
+        s"""select name as hotel_name, date, sum(total) as total
+           |from tmp group by name, date, day""".stripMargin)
 
       val now = java.time.Instant.now
-      val batchInterval = 2000
-//      df.writeStream.trigger(Trigger.ProcessingTime(batchInterval))
-//        .foreachBatch({ (batchDF: DataFrame, batchId: Long) =>
-//          println(now.plusMillis(batchId * batchInterval.milliseconds))
-//        })
-//        .outputMode(...)
-//      .start()
+      val batchInterval = 200
 
       import spark.implicits._
       val query = df.writeStream
@@ -35,17 +32,18 @@ object ReadStreamDeltaMain3 {
         .foreachBatch({ (batchDF: DataFrame, batchId: Long) =>
           System.out.println(now.plusMillis(batchId * batchInterval.milliseconds.toMillis))
 
-          val updateTime = batchId * batchInterval.milliseconds.toMillis
+          val updateTime = now.plusMillis(batchId * batchInterval.milliseconds.toMillis).toEpochMilli
           val totalRevenuePerHotel = batchDF.map {
-            case Row(hotel_name: String, date: Date, day: Long, total: Float) =>
+            case Row(hotel_name: String, date: Date, total: Double) =>
               TotalRevenuePerHotel(updateTime: Long, hotel_name, date, total)
-          } collect()
+          }.collect()
 
           PostgresSink(PostgresInstance(
             host="localhost", port=5432,
-            userName="postgres", password="postgres", db="postgres"
+            userName="postgres", password="postgres", db="sparkapp"
           )).process(totalRevenuePerHotel)
         })
+        .option("checkpointLocation", s"$sparkCheckpointDirectory/$databaseName/delta_to_postgres")
         .outputMode("complete").start()
 
       query.awaitTermination()

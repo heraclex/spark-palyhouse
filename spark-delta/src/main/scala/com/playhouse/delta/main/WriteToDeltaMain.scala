@@ -22,7 +22,7 @@ object WriteToDeltaMain {
 
       // https://github.com/delta-io/connectors/issues/71
       spark.read.option("delimiter", ",")
-        .option("header", "true").csv("./src/main/resources/hotels_part1.csv")
+        .option("header", "true").csv("./src/main/resources/hotels_part4.csv")
         .createTempView("tmp")
 
       val df = spark.sql(

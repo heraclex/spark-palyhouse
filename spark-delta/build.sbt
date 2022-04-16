@@ -17,6 +17,8 @@ libraryDependencies += "io.delta" %% "delta-core" % "1.1.0"
 
 libraryDependencies += "com.amazonaws" % "aws-java-sdk" % "1.11.534"
 libraryDependencies += "com.amazonaws" % "aws-java-sdk-bundle" % "1.11.375"
+libraryDependencies += "org.postgresql" % "postgresql" % "42.2.16"
+
 libraryDependencies += "org.apache.hadoop" % "hadoop-aws" % "3.3.1" excludeAll(
   ExclusionRule("javax.servlet", "servlet-api"),
   ExclusionRule("javax.servlet.jsp", "jsp-api"),

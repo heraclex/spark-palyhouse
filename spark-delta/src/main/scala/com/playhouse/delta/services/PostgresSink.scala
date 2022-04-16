@@ -61,15 +61,15 @@ case class PostgresSink(postgres: PostgresInstance)
     }
   }
 
-  override protected def metricRetentionHours: Int = 1 //7 * 24
+  override protected def metricRetentionHours: Int = 1 * 24
 
   def executeQueryInPostgres(sqls: Seq[String])(implicit conn: Connection): Try[Unit] = Try {
-    sparkAppLogger.debug(s"Executing sqls ...${sqls.mkString("\n")}")
+    sparkAppLogger.info(s"Executing sqls ...${sqls.mkString("\n")}")
     val start = System.currentTimeMillis()
     val stm = conn.createStatement()
     sqls.foreach(stm.addBatch)
     stm.executeBatch()
-    sparkAppLogger.debug(s"Executing ${sqls.size} sql(s) against Postgres took ${System.currentTimeMillis() - start} ms")
+    sparkAppLogger.info(s"Executing ${sqls.size} sql(s) against Postgres took ${System.currentTimeMillis() - start} ms")
   }
 
   def df: Long => String = TimeUtils.formatTime("YYYYMMdd")
@@ -87,7 +87,7 @@ case class PostgresSink(postgres: PostgresInstance)
        |    update_time  timestamptz not null,
        |    hotel_name  varchar(100),
        |    date        Date,
-       |    total       float,
+       |    total       float
        |) partition by RANGE (update_time)
     """.stripMargin
 
