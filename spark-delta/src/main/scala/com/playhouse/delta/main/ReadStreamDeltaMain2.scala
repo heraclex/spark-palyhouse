@@ -14,37 +14,19 @@ object ReadStreamDeltaMain2 {
       implicit val spark: SparkSession = SparkSessionBuilder().build(appName = "spark-delta")
       sensorDataLogger.info("Got spark...")
 
-      spark.readStream.format("delta").table("travel.hotel_natal_rn").createTempView("delta_hotel_natal")
-      val df = spark.sql("select name as hotel_name, date, day, sum(total) as total from delta_hotel_natal group by name, date, day")
-
-      val s3databaseLocation = s"s3a://${TargetSystem.DELTA.toString}/$databaseName.db"
-      val s3TableLocation = s"$s3databaseLocation/hotel_natal_rn_agg"
-      val tableCols =
-        s"""travelCode int, userCode int, name string, place string, stayingDays int,
-           |price float, total float, `date` date, day int""".stripMargin
-//
-//      spark.sql(s"GENERATE symlink_format_manifest FOR TABLE delta.`$s3TableLocation`")
-//      spark.sql(
-//        s"""CREATE DATABASE IF NOT EXISTS $databaseName
-//           |LOCATION 's3a://${TargetSystem.DELTA.toString}/$databaseName.db'""".stripMargin)
-//      spark.sql(
-//        s"""CREATE EXTERNAL TABLE IF NOT EXISTS $databaseName.hotel_natal_rn($tableCols)
-//            USING DELTA
-//            PARTITIONED BY(day)
-//            LOCATION '$s3TableLocation'""".stripMargin)
-//      spark.sql(s"ALTER TABLE delta.`$s3TableLocation` SET TBLPROPERTIES(delta.compatibility.symlinkFormatManifest.enabled=true)")
+      spark.readStream.format("delta").table(s"$databaseName.hotel1").createTempView("tmp")
+      val df = spark.sql(
+        s"""select name as hotel_name, date, day, sum(total) as total
+           |from tmp group by name, date, day""".stripMargin)
 
       val query = df.writeStream.format("delta")
         .outputMode("complete")
         .partitionBy("day")
-        .option("checkpointLocation", s"$sparkCheckpointDirectory/table2")
-        .toTable(s"$databaseName.hotel_natal_rn_agg")
+        .option("checkpointLocation", s"$sparkCheckpointDirectory/$databaseName/hotel2")
+        .toTable(s"$databaseName.hotel2")
         //.start()
 
       query.awaitTermination()
-
-
-
 
     } match {
       case Success(_) => sensorDataLogger.info("Calling from finish job...SUCCESSSSSSS")

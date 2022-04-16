@@ -22,7 +22,7 @@ object WriteToDeltaMain {
 
       // https://github.com/delta-io/connectors/issues/71
       spark.read.option("delimiter", ",")
-        .option("header", "true").csv("./src/main/resources/hotels_part3.csv")
+        .option("header", "true").csv("./src/main/resources/hotels_part1.csv")
         .createTempView("tmp")
 
       val df = spark.sql(
@@ -39,30 +39,10 @@ object WriteToDeltaMain {
            |""".stripMargin)
 
       df.show(10,true)
-      df.write.format("delta").partitionBy("day")
-        .mode("append").save(s"$s3TableLocation")
 
-
-      // https://docs.delta.io/latest/presto-integration.html
-      spark.sql(s"GENERATE symlink_format_manifest FOR TABLE delta.`$s3TableLocation`")
       spark.sql(s"CREATE DATABASE IF NOT EXISTS $databaseName LOCATION 's3a://${TargetSystem.DELTA.toString}/$databaseName.db'".stripMargin)
-      spark.sql(
-        s"""CREATE EXTERNAL TABLE IF NOT EXISTS $databaseName.$tableName($tableCols)
-            USING DELTA
-            PARTITIONED BY(day)
-            LOCATION '$s3TableLocation'""".stripMargin)
-      spark.sql(s"ALTER TABLE delta.`$s3TableLocation` SET TBLPROPERTIES(delta.compatibility.symlinkFormatManifest.enabled=true)")
-
-//      spark.sql(s"GENERATE symlink_format_manifest FOR TABLE delta.`s3a://${TargetSystem.DELTA.toString}/$databaseName.db/$tableName`")
-//      spark.sql(
-//        s"""
-//           |CREATE EXTERNAL TABLE $databaseName.$tableName ($tableCols)
-//           |PARTITIONED BY (day)
-//           |ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
-//           |STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.SymlinkTextInputFormat'
-//           |OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-//           |LOCATION '<path-to-delta-table>/_symlink_format_manifest/'  -- location of the generated manifest
-//           |""".stripMargin)
+      df.write.format("delta").partitionBy("day")
+        .mode("append").saveAsTable(s"$databaseName.$tableName")
 
     } match {
       case Success(_) => sensorDataLogger.info("Calling from finish job...SUCCESSSSSSS")

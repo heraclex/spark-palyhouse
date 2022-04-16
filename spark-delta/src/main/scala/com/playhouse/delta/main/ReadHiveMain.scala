@@ -12,8 +12,6 @@ object ReadHiveMain {
       implicit val spark: SparkSession = SparkSessionBuilder().build(appName = "spark-delta")
       sensorDataLogger.info("Got spark...")
 
-//      val hotel = spark.table("delta.hotel")
-
       val df = spark.sql("select * from travel.hotel where day > 20210101")
       df.show(10, true)
       df.write.partitionBy("day").mode("overwrite").saveAsTable(s"travel.hotel_20210101")
