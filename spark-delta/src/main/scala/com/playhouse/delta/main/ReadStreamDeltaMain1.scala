@@ -3,7 +3,7 @@ package com.playhouse.delta.main
 import com.playhouse.delta.common.Constants.{databaseName, sparkCheckpointDirectory, tableName}
 import com.playhouse.delta.common.TargetSystem
 import com.playhouse.delta.infra.spark.SparkSessionBuilder
-import com.playhouse.delta.sensorDataLogger
+import com.playhouse.delta.sparkAppLogger
 import org.apache.spark.sql.SparkSession
 
 import scala.util.{Failure, Success, Try}
@@ -12,7 +12,7 @@ object ReadStreamDeltaMain1 {
   def main(args: Array[String]): Unit = {
     Try{
       implicit val spark: SparkSession = SparkSessionBuilder().build(appName = "spark-delta")
-      sensorDataLogger.info("Got spark...")
+      sparkAppLogger.info("Got spark...")
 
       spark.readStream.format("delta").table(s"$databaseName.hotel").createTempView("tmp")
 
@@ -30,9 +30,9 @@ object ReadStreamDeltaMain1 {
       query.awaitTermination()
 
     } match {
-      case Success(_) => sensorDataLogger.info("Calling from finish job...SUCCESSSSSSS")
+      case Success(_) => sparkAppLogger.info("Calling from finish job...SUCCESSSSSSS")
       case Failure(e) =>
-        sensorDataLogger.error(s"OH NO... Things went wrong, Here exactly --> ${e.getMessage} ${e.getStackTrace.mkString("\n")}")
+        sparkAppLogger.error(s"OH NO... Things went wrong, Here exactly --> ${e.getMessage} ${e.getStackTrace.mkString("\n")}")
         // TODO : for debugging.
         e.printStackTrace()
         System.exit(-1)

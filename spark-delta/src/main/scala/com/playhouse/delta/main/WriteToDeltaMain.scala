@@ -3,7 +3,7 @@ package com.playhouse.delta.main
 import com.playhouse.delta.common._
 import com.playhouse.delta.common.Constants._
 import com.playhouse.delta.infra.spark.SparkSessionBuilder
-import com.playhouse.delta.sensorDataLogger
+import com.playhouse.delta.sparkAppLogger
 import org.apache.spark.sql.SparkSession
 
 import scala.util.{Failure, Success, Try}
@@ -12,7 +12,7 @@ object WriteToDeltaMain {
   def main(args: Array[String]): Unit = {
     Try{
       implicit val spark: SparkSession = SparkSessionBuilder().build(appName = "spark-delta")
-      sensorDataLogger.info("Got spark...")
+      sparkAppLogger.info("Got spark...")
 
       val s3databaseLocation = s"s3a://${TargetSystem.DELTA.toString}/$databaseName.db"
       val s3TableLocation = s"$s3databaseLocation/$tableName"
@@ -45,9 +45,9 @@ object WriteToDeltaMain {
         .mode("append").saveAsTable(s"$databaseName.$tableName")
 
     } match {
-      case Success(_) => sensorDataLogger.info("Calling from finish job...SUCCESSSSSSS")
+      case Success(_) => sparkAppLogger.info("Calling from finish job...SUCCESSSSSSS")
       case Failure(e) =>
-        sensorDataLogger.error(s"OH NO... Things went wrong, Here exactly --> ${e.getMessage} ${e.getStackTrace.mkString("\n")}")
+        sparkAppLogger.error(s"OH NO... Things went wrong, Here exactly --> ${e.getMessage} ${e.getStackTrace.mkString("\n")}")
         // TODO : for debugging.
         e.printStackTrace()
         System.exit(-1)

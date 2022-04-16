@@ -3,7 +3,7 @@ package com.playhouse
 import com.typesafe.scalalogging.LazyLogging
 
 package object delta extends LazyLogging{
-  class SensorDataLogger() {
+  class SparkAppLogger() {
 
     def info(msg: String) = {
       logger.info(msg)
@@ -19,5 +19,5 @@ package object delta extends LazyLogging{
     }
 
   }
-  lazy val sensorDataLogger = new SensorDataLogger()
+  lazy val sparkAppLogger = new SparkAppLogger()
 }
