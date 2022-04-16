@@ -47,7 +47,7 @@ object WriteHiveDeltaMain {
       // support Hive
       // https://docs.delta.io/latest/presto-integration.html#step-1-generate-manifests-of-a-delta-table-using-apache-spark
       spark.sql(s"CREATE DATABASE IF NOT EXISTS $database LOCATION '$s3DatabaseLocation'")
-//      spark.sql(s"DROP TABLE IF EXISTS $database.$tableName")
+      spark.sql(s"DROP TABLE IF EXISTS $database.$tableName")
       spark.sql(s""" CREATE EXTERNAL TABLE IF NOT EXISTS $database.$tableName($tableCols)
             USING DELTA
             PARTITIONED BY(day)
