@@ -11,7 +11,7 @@ import scala.util.{Failure, Success, Try}
 object ReadStreamDeltaMain2 {
   def main(args: Array[String]): Unit = {
     Try{
-      implicit val spark: SparkSession = SparkSessionBuilder().build(appName = "spark-delta")
+      implicit val spark: SparkSession = SparkSessionBuilder().build(appName = "spark-read-delta2")
       sparkAppLogger.info("Got spark...")
 
       spark.readStream.format("delta").table(s"$databaseName.hotel1").createTempView("tmp")

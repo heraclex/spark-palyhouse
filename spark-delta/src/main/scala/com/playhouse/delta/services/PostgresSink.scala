@@ -8,7 +8,7 @@ import java.sql.{Connection, Date, DriverManager}
 import scala.util.{Failure, Success, Try}
 
 
-case class TotalRevenuePerHotel(hotelName: String, date: Date, total: Double)
+case class TotalRevenuePerHotel(updateTime: Long, hotelName: String, date: Date, total: Double)
 
 case class PostgresInstance(host: String, port: Int, userName: String, password: String, db: String)
 
@@ -61,7 +61,7 @@ case class PostgresSink(postgres: PostgresInstance)
     }
   }
 
-  override protected def metricRetentionHours: Int = 7 * 24
+  override protected def metricRetentionHours: Int = 1 //7 * 24
 
   def executeQueryInPostgres(sqls: Seq[String])(implicit conn: Connection): Try[Unit] = Try {
     sparkAppLogger.debug(s"Executing sqls ...${sqls.mkString("\n")}")
@@ -85,10 +85,9 @@ case class PostgresSink(postgres: PostgresInstance)
        |CREATE TABLE IF NOT EXISTS $tableName
        |(
        |    update_time  timestamptz not null,
-       |    country      varchar(20),
-       |    platform     varchar(20),
-       |    active_users int,
-       |    active_shoppers int
+       |    hotel_name  varchar(100),
+       |    date        Date,
+       |    total       float,
        |) partition by RANGE (update_time)
     """.stripMargin
 
@@ -104,11 +103,11 @@ case class PostgresSink(postgres: PostgresInstance)
   private def createIndexOnMasterTableSql(ts: Long) =
     s"""
        |CREATE INDEX IF NOT EXISTS ${indexName}
-       | ON $tableName(update_time, country, platform DESC )
+       | ON $tableName(hotel_name, date DESC )
        |""".stripMargin
 
-  private def createInsertCommands(input: ActiveUserCount): String =
-    s"INSERT INTO $tableName VALUES ('${TimeUtils.formatTimeISO8061(input.updateTime)}','${input.country}','${input.platform}',${input.activeUsers},${input.activeShoppers})"
+  private def createInsertCommands(input: TotalRevenuePerHotel): String =
+    s"INSERT INTO $tableName VALUES ('${TimeUtils.formatTimeISO8061(input.updateTime)}','${input.hotelName}','${input.date}',${input.total})"
 
   private def dropOldTableSqls(ts: Long) = {
     val outdatedPartitionTs = ts - metricRetentionHours * TimeUtils.OneHourMillis
