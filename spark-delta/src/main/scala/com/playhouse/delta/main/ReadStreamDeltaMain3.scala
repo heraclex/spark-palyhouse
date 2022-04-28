@@ -1,6 +1,6 @@
 package com.playhouse.delta.main
 
-import com.playhouse.delta.common.Constants.{databaseName, sparkCheckpointDirectory}
+import com.playhouse.delta.common.Constants.{databaseName, postgresPass, postgresUser, sparkCheckpointDirectory}
 import com.playhouse.delta.infra.spark.SparkSessionBuilder
 import com.playhouse.delta.services.{PostgresInstance, PostgresSink, TotalRevenuePerHotel}
 import com.playhouse.delta.sparkAppLogger
@@ -40,7 +40,7 @@ object ReadStreamDeltaMain3 {
 
           PostgresSink(PostgresInstance(
             host="localhost", port=5432,
-            userName="postgres", password="postgres", db="sparkapp"
+            userName=postgresUser, password=postgresPass, db="sparkapp"
           )).process(totalRevenuePerHotel)
         })
         .option("checkpointLocation", s"$sparkCheckpointDirectory/$databaseName/delta_to_postgres")

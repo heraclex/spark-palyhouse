@@ -18,7 +18,9 @@ object ReadStreamDeltaMain1 {
 
       val df = spark.sql(
         s"""select * from tmp
-           |where place in ('Natal (RN)', 'Sao Paulo (SP)', 'Rio de Janeiro (RJ)')""".stripMargin)
+           |where place in
+           |('Natal (RN)', 'Sao Paulo (SP)', 'Rio de Janeiro (RJ)', 'Florianopolis (SC)')""".stripMargin)
+
 
       val query = df.writeStream.format("delta")
         .outputMode("append")

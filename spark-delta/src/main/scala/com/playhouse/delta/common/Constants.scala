@@ -11,6 +11,9 @@ object Constants {
 
   val databaseName = "travel"
   val tableName = "hotel"
+
+  val postgresUser = "postgres"
+  val postgresPass = "postgres"
 }
 
 object TargetSystem extends Enumeration {
