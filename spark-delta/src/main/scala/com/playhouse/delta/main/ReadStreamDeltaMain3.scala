@@ -42,6 +42,8 @@ object ReadStreamDeltaMain3 {
             host="localhost", port=5432,
             userName=postgresUser, password=postgresPass, db="sparkapp"
           )).process(totalRevenuePerHotel)
+
+          // steps to send notification for external queue
         })
         .option("checkpointLocation", s"$sparkCheckpointDirectory/$databaseName/delta_to_postgres")
         .outputMode("complete").start()

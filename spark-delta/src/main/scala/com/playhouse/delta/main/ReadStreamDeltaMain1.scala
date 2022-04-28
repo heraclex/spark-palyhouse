@@ -21,7 +21,6 @@ object ReadStreamDeltaMain1 {
            |where place in
            |('Natal (RN)', 'Sao Paulo (SP)', 'Rio de Janeiro (RJ)', 'Florianopolis (SC)')""".stripMargin)
 
-
       val query = df.writeStream.format("delta")
         .outputMode("append")
         .partitionBy("day")
