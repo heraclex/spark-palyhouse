@@ -2,7 +2,7 @@ package com.playhouse.delta.infra.spark
 
 import com.playhouse.delta.common.Constants._
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.SparkSession.Builder
+import org.apache.spark.sql.SparkSession.{Builder, active}
 
 private[spark] object SparkSessionDecorators {
 
@@ -45,6 +45,12 @@ private[spark] object SparkSessionDecorators {
       spark
     }
 
+    def configAzureBlobStorage(storageAccountName: String, storageAccountKey: String) = {
+      spark.sparkContext.hadoopConfiguration.set("fs.azure", "org.apache.hadoop.fs.azure.NativeAzureFileSystem")
+      spark.sparkContext.hadoopConfiguration.set(s"fs.azure.account.key.$storageAccountName.blob.core.windows.net", storageAccountKey)
+      spark
+    }
+
     def configLog(level: String) = {
       spark.sparkContext.setLogLevel(level)
       spark
@@ -84,6 +90,13 @@ private[spark] object SparkSessionDecorators {
         .config("spark.history.fs.logDirectory", sparkLogDirectory)
         .config("spark.ui.enabled", "true")
         .enableHiveSupport()
+    }
+
+    def configAzureBlobStorage(): SparkSession.Builder = {
+
+
+      b.config("fs.azure", "org.apache.hadoop.fs.azure.NativeAzureFileSystem")
+      b.config("fs.azure.account.key.youraccount.blob.core.windows.net", "yourkey")
     }
   }
 }

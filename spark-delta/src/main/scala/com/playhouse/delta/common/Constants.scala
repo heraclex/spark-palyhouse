@@ -14,6 +14,8 @@ object Constants {
 
   val postgresUser = "postgres"
   val postgresPass = "postgres"
+
+  val azureBlobStoreAccount = "rsv0ucpeuint0yvlr"
 }
 
 object TargetSystem extends Enumeration {
